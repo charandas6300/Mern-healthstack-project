@@ -2,8 +2,9 @@ import React, { useState, useRef } from "react";
 import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-// import emailjs from "@emailjs/browser";
-import sendEmail from './nodeMailer.js';
+import emailjs from 'emailjs-com';
+import { loginRoute } from "../utils/APIRoutes";
+
 
 
 const Login = () => {
@@ -19,56 +20,17 @@ const Login = () => {
   const USER_KEY = "current user";
 
   const checkUser = async (user) => {
-    const allUsers = await axios.get("http://localhost:5000/users");
-    // console.log(allUsers.data);
-    let flag = false;
-    for (let u of allUsers.data) {
-      if (
-        u.username === user.username &&
-        u.email === user.email &&
-        u.password === user.password &&
-        u.usertype === user.usertype
-      ) {
-        flag = true;
-        localStorage.setItem(USER_KEY, JSON.stringify(u));
-        return true;
-      } else if (
-        u.username === user.username &&
-        u.email === user.email &&
-        u.usertype === user.usertype &&
-        u.password !== user.password
-      ) {
-        alert("Invalid Password.Please enter valid password.");
-        return false;
-      } else if (
-        u.username !== user.username &&
-        u.email === user.email &&
-        u.usertype === user.usertype &&
-        u.password === user.password
-      ) {
-        alert("Invalid Username.Please enter valid username.");
-        return false;
-      } else if (
-        u.username === user.username &&
-        u.email !== user.email &&
-        u.usertype === user.usertype &&
-        u.password === user.password
-      ) {
-        alert("Invalid Email.Please enter valid Email.");
-        return false;
-      } else if (
-        u.username === user.username &&
-        u.email === user.email &&
-        u.usertype !== user.usertype &&
-        u.password === user.password
-      ) {
-        alert("Invalid Usertype.Please choose valid Usertype.");
-        return false;
-      }
+    const res = await axios.post(loginRoute,{
+      username: user.username,
+      email: user.email,
+      password: user.password,
+      usertype: user.usertype,
+    });
+    if(res.data.status){
+      return true;
     }
-
-    if (flag === false) {
-      alert("User dosnot exists.Please Register.");
+    else{
+      alert(res.data.msg + ". Please register.");
       return false;
     }
   };
@@ -89,9 +51,10 @@ const Login = () => {
     });
   };
 
+  
   // const getEmail = () => {
   //   axios
-  //     .get(`http://localhost:5000/users?email=${user.email}`)
+  //     .get(`${hostURL}/users?email=${user.email}`)
   //     .then((res) => {
   //       setU(res.data);
   //     })
@@ -120,21 +83,21 @@ const Login = () => {
   //       }
   //     );
   // };
+  
+//###############################################
+  // function sendEmail(e){
+  //   e.preventDefault();
 
-const [email,setEmail] = useState("");
-
-const sendEmail = async(e)=>{
-  e.preventDefault()
-
-  const data = {
-   email
-  }
-
-  const response = await axios.post("http://localhost:5000/api/sendemail", data)
-  console.log(response.data)
-};
-
-
+  //   emailjs.sendForm('service_0bhjhw9', 'template_k49axdt', e.target, '63ZkrCb_XkZik91y7')
+  //     .then((result) => {
+  //         console.log(result);
+  //     }, (error) => {
+  //         console.log(error.text);
+  //     }
+  //     );
+  //     e.target.reset()
+  // };
+  //##############################################################################
   return (
     <Container>
       <Wrapper>
@@ -150,7 +113,7 @@ const sendEmail = async(e)=>{
             }}
             required
           />
-          <Input
+           <Input
             type="email"
             placeholder="Email"
             name="email"
@@ -204,6 +167,7 @@ const sendEmail = async(e)=>{
                 FORGOT PASSWORD
               </b>
             </Link> */}
+             
           </p>
           <p style={{ fontSize: "12px" }}>
             DON'T HAVE AN ACCOUNT ?
@@ -223,19 +187,15 @@ const sendEmail = async(e)=>{
           </p>
           <Button>LOGIN</Button>
         </Form>
-        <Form onSubmit={sendEmail}>
-        <Input
-            type="email"
-            placeholder="Email"
-            name="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <Button type="submit">SEND EMAIL</Button>
-        </Form>
-         
-
+        {/*###############################################################################*/}
+        {/* <Form onSubmit={sendEmail}>
+      <input type="text" placeholder="full name" name="user_name" required/>
+      <input type="email" placeholder="email" name="user_email" required/>
+      <input type="text" placeholder="subject" name="Subject" required/>
+      <textarea name="message"id="" ></textarea> 
+      <button type="submit">send message</button>     
+      </Form> */}
+      {/*###############################################################################*/}
       </Wrapper>
     </Container>
   );
@@ -308,4 +268,3 @@ const Label = styled.label`
 `;
 
 export default Login;
-
